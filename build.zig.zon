@@ -1,0 +1,23 @@
+.{
+    .name = .sm83_toolchain,
+    .version = "0.0.1",
+    .minimum_zig_version = "0.17.1",
+    .fingerprint = 0x34b4d96fef83def9,
+
+    .dependencies = .{
+        .zig_sm83 = .{
+            .url = "git+https://github.com/llvm-z80/zig-z80.git#ac35835dde85d220a7a67b5fba5dcc579fe15436",
+            .hash = "zig-0.0.0-Fp4XJJ3lSg7XPN_mZf9uyhPEovFJwKjFMdnQXKoew_hS",
+        },
+        .llvm_z80 = .{
+            .url = "git+https://github.com/llvm-z80/llvm-z80.git#d48307833b477a872afeca7dcbefaa6330aebf10",
+            .hash = "N-V-__8AAEBiD5D33uaIS8PMvpYIiA9-RuLQqVFsy9Ysia22",
+        },
+    },
+
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "cmake",
+    },
+}

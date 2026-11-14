@@ -1,0 +1,92 @@
+# Builds the packages of both hosts and publishes them as one release.
+# The release tag is the first 12 characters of the commit.
+
+name: release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build ${{ matrix.host }}
+    strategy:
+      matrix:
+        include:
+          - host: macos_aarch64
+            runner: macos-15
+            # A 7 GB runner can't build LLVM and zig-sm83 at the same time.
+            jobs: -j1
+          - host: linux_x86_64
+            runner: ubuntu-24.04
+            jobs: ""
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+        with:
+          version: 0.17.1
+          # Each release builds from a clean cache.
+          use-cache: false
+
+      - name: Install build tools
+        run: |
+          if [ "$RUNNER_OS" = macOS ]; then
+            brew install ninja xz
+          else
+            sudo apt-get update
+            sudo apt-get install -y ninja-build xz-utils
+          fi
+
+      - name: Build
+        run: zig build -Dhost=${{ matrix.host }} --prefix out/${{ matrix.host }} ${{ matrix.jobs }}
+
+      - name: Package
+        run: |
+          tag=$(echo "$GITHUB_SHA" | cut -c1-12)
+          bash ci/package.sh ${{ matrix.host }} "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/$tag"
+
+      - name: Smoke test
+        run: bash ci/smoke.sh out/dist ${{ matrix.host }}
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ matrix.host }}
+          path: out/dist/
+          if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(echo "$GITHUB_SHA" | cut -c1-12)
+          {
+            echo "Dependencies for \`build.zig.zon\`:"
+            echo
+            echo '```zig'
+            cat dist/macos_aarch64.zon dist/linux_x86_64.zon
+            echo '```'
+          } > notes.md
+
+          # Every asset is attached before publishing, so an immutable release starts complete.
+          gh release create "$tag" dist/*.tar.xz --draft \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "sm83-toolchain $tag" --notes-file notes.md
+          gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --draft=false
+
+          cat notes.md >> "$GITHUB_STEP_SUMMARY"

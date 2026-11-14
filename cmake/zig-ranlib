@@ -1,0 +1,3 @@
+#!/bin/sh
+# CMake runs this as its ranlib. zig ranlib is llvm-ranlib.
+exec zig ranlib "$@"

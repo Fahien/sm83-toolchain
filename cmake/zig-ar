@@ -1,0 +1,3 @@
+#!/bin/sh
+# CMake runs this as its archiver. zig ar is llvm-ar, which reads every object format.
+exec zig ar "$@"
