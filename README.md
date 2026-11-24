@@ -4,7 +4,7 @@ Toolchain to build Game Boy ROMs from Zig.
 
 | Package | Files | Source |
 | --- | --- | --- |
-| `llvm-sm83-<host>.tar.xz` | `bin/llc`, `bin/opt`, `lib/sm83/memcpy.asm`, `LICENSE.TXT` | [llvm-z80](https://github.com/llvm-z80/llvm-z80) |
+| `llvm-sm83-<host>.tar.xz` | `bin/llc`, `bin/opt`, `lib/sm83/*.asm`, `LICENSE.TXT` | [llvm-z80](https://github.com/llvm-z80/llvm-z80) |
 | `zig-sm83-<host>.tar.xz` | `bin/zig`, `lib/std/`, `LICENSE` | [zig-z80](https://github.com/llvm-z80/zig-z80) |
 
 `<host>` is `macos_aarch64` or `linux_x86_64`. `build.zig.zon` pins the source commits.
@@ -27,7 +27,7 @@ The `release` workflow does four things:
 
 1. Builds each host on its own runner.
 2. Packs the files with `ci/package.sh`.
-3. Compiles a test function with `ci/smoke.sh`, using the unpacked tarballs.
+3. Compiles test functions with `ci/smoke.sh`, using the unpacked tarballs.
 4. Publishes a release whose tag is the first 12 characters of the commit.
 
 ## Use from your zig project
@@ -53,5 +53,5 @@ Unless you explicitly state otherwise, any contribution that you intentionally s
 
 The packages hold binaries built from other projects, and each package carries its source's license:
 
-- `llvm-sm83` is under the Apache License v2.0 with LLVM Exceptions, in `LICENSE.TXT`.
+- `llvm-sm83` is under the Apache License v2.0 with LLVM Exceptions, in `LICENSE.TXT`. The runtime helpers in `lib/sm83` are under their own licenses, in `lib/sm83/LICENSE`.
 - `zig-sm83` is under the MIT license, in `LICENSE`.

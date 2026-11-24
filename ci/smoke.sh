@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Unpacks the two tarballs of one host and compiles a Zig function to SM83 assembly.
+# Unpacks the two tarballs of one host and compiles Zig functions to SM83 assembly.
 #
 # Usage: bash ci/smoke.sh <directory with the tarballs> <host>
 set -euo pipefail
@@ -16,6 +16,16 @@ cat > "$work/smoke.zig" <<'ZIG'
 export fn add(a: u8, b: u8) u8 {
     return a +% b;
 }
+
+// The SM83 has no instruction for these, so llc calls runtime helpers.
+export fn multiply(a: u16, b: u16) u16 {
+    return a *% b;
+}
+
+export fn callTwice(function: *const fn () callconv(.c) void) void {
+    function();
+    function();
+}
 ZIG
 
 "$work/zig-sm83/bin/zig" build-obj -target sm83-freestanding -O ReleaseFast \
@@ -30,4 +40,13 @@ ZIG
 # The export names the stripped function, and its body is one SM83 add.
 grep '^_add = L_smoke.add$' "$work/smoke.asm"
 grep -q $'^\tadd\ta,e$' "$work/smoke.asm"
+
+# The package holds the source of every helper that the code calls.
+helpers=$(grep -oE $'\t(call|jp)\t__[a-z0-9_]+' "$work/smoke.asm" | cut -f3 | sort -u)
+for helper in __call_hl ___mulhi3; do
+    grep -qx -- "$helper" <<< "$helpers"
+done
+for helper in $helpers; do
+    grep -x -- "$helper:" "$work"/llvm-sm83/lib/sm83/*.asm
+done
 rm -rf "$work"

@@ -4,7 +4,7 @@
 //! the files of one package:
 //!
 //! ```
-//! zig-out/llvm-sm83/   bin/llc, bin/opt, lib/sm83/memcpy.asm, LICENSE.TXT
+//! zig-out/llvm-sm83/   bin/llc, bin/opt, lib/sm83/*.asm, LICENSE.TXT
 //! zig-out/zig-sm83/    bin/zig, lib/std/, LICENSE
 //! ```
 
@@ -178,11 +178,15 @@ fn installLlvm(b: *std.Build, llvm_z80: *std.Build.Dependency, tablegen: Tablege
         b.getInstallStep().dependOn(&install.step);
     }
 
-    b.getInstallStep().dependOn(&b.addInstallFileWithDir(
-        llvm_z80.path("compiler-rt/lib/builtins/sm83/memcpy.asm"),
-        .{ .custom = "llvm-sm83/lib/sm83" },
-        "memcpy.asm",
-    ).step);
+    // The runtime helpers that llc's output calls.
+    // A GBDK program has its own startup code, so `crt0` stays out.
+    b.getInstallStep().dependOn(&b.addInstallDirectory(.{
+        .source_dir = llvm_z80.path("compiler-rt/lib/builtins/sm83"),
+        .install_dir = .{ .custom = "llvm-sm83/lib" },
+        .install_subdir = "sm83",
+        .include_extensions = &.{ ".asm", "LICENSE" },
+        .exclude_extensions = &.{ "crt0.asm", "crt0_sdcc.asm" },
+    }).step);
     b.getInstallStep().dependOn(&b.addInstallFileWithDir(
         llvm_z80.path("llvm/LICENSE.TXT"),
         .{ .custom = "llvm-sm83" },
