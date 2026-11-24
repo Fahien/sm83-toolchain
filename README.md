@@ -15,6 +15,8 @@ Toolchain to build Game Boy ROMs from Zig.
 zig build -Dhost=<host> --prefix out/<host>
 ```
 
+`-Dpackage=llvm-sm83` or `-Dpackage=zig-sm83` builds one package and fetches only its source.
+
 The build needs `cmake`, `ninja` and Zig 0.17.1 on `PATH`. `zig cc` compiles LLVM for the host, so a Mac builds both hosts. The macOS packages build only on a Mac.
 
 - The Linux `llc` and `opt` link glibc 2.28 and libc++ statically.
@@ -25,9 +27,9 @@ The build needs `cmake`, `ninja` and Zig 0.17.1 on `PATH`. `zig cc` compiles LLV
 
 The `release` workflow does four things:
 
-1. Builds each host on its own runner.
+1. Builds each package of each host on its own runner.
 2. Packs the files with `ci/package.sh`.
-3. Compiles test functions with `ci/smoke.sh`, using the unpacked tarballs.
+3. Compiles test functions on each host with `ci/smoke.sh`, using the unpacked tarballs.
 4. Publishes a release whose tag is the first 12 characters of the commit.
 
 ## Use from your zig project

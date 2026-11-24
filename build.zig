@@ -7,22 +7,32 @@
 //! zig-out/llvm-sm83/   bin/llc, bin/opt, lib/sm83/*.asm, LICENSE.TXT
 //! zig-out/zig-sm83/    bin/zig, lib/std/, LICENSE
 //! ```
+//!
+//! `-Dpackage=<package>` installs only one of them.
 
 const std = @import("std");
 
-pub fn build(b: *std.Build) void {
+pub fn build(b: *std.Build) !void {
     const host = b.option(Host, "host", "Host that the toolchain runs on (default: this machine)") orelse Host.native(b);
     if (host == .macos_aarch64 and Host.native(b) != .macos_aarch64) {
         @panic("The macOS packages build only on a Mac");
     }
 
-    const llvm_z80 = b.dependency("llvm_z80", .{});
-    const zig_sm83 = b.dependency("zig_sm83", .{ .@"version-string" = "0.17.0" });
+    const package = b.option(Package, "package", "Package to build (default: both)");
 
-    const tablegen = Tablegen.build(b, llvm_z80);
-    installLlvm(b, llvm_z80, tablegen, host);
-    installZig(b, zig_sm83, host);
+    // The sources are lazy, so a build of one package fetches only its source.
+    if (package == null or package == .@"llvm-sm83") {
+        const llvm_z80 = try b.dependencyLazy("llvm_z80", .{});
+        installLlvm(b, llvm_z80, Tablegen.build(b, llvm_z80), host);
+    }
+    if (package == null or package == .@"zig-sm83") {
+        const zig_sm83 = try b.dependencyLazy("zig_sm83", .{ .@"version-string" = "0.17.0" });
+        installZig(b, zig_sm83, host);
+    }
 }
+
+/// Each field is the name of the package's install directory.
+const Package = enum { @"llvm-sm83", @"zig-sm83" };
 
 /// A machine that builds ROMs. Each host gets its own pair of packages.
 const Host = enum {
