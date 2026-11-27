@@ -26,7 +26,7 @@ pub fn build(b: *std.Build) !void {
         installLlvm(b, llvm_z80, Tablegen.build(b, llvm_z80), host);
     }
     if (package == null or package == .@"zig-sm83") {
-        const zig_sm83 = try b.dependencyLazy("zig_sm83", .{ .@"version-string" = "0.17.0" });
+        const zig_sm83 = try b.dependencyLazy("zig_sm83", .{ .@"version-string" = "0.17.1" });
         installZig(b, zig_sm83, host);
     }
 }
@@ -213,7 +213,7 @@ fn installZig(b: *std.Build, zig_sm83: *std.Build.Dependency, host: Host) void {
         "-Doptimize=ReleaseFast",
         "-Denable-llvm=false",
         "-Dno-lib",
-        "-Dversion-string=0.17.0",
+        "-Dversion-string=0.17.1",
         // Debug info pushes the compile past the fork's max_rss limit.
         "-Dstrip",
         // Any CPU of the host's architecture runs the compiler.

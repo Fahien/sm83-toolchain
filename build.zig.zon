@@ -6,13 +6,13 @@
 
     .dependencies = .{
         .zig_sm83 = .{
-            .url = "git+https://github.com/llvm-z80/zig-z80.git#ac35835dde85d220a7a67b5fba5dcc579fe15436",
-            .hash = "zig-0.0.0-Fp4XJJ3lSg7XPN_mZf9uyhPEovFJwKjFMdnQXKoew_hS",
+            .url = "git+https://github.com/llvm-z80/zig-z80.git#81763d83a63a7707ae5d9564efaf678647ecfefc",
+            .hash = "zig-0.0.0-Fp4XJDFcTw66TO201BewAgCPZR31Doo_wRLicgjqw2TZ",
             .lazy = true,
         },
         .llvm_z80 = .{
-            .url = "git+https://github.com/llvm-z80/llvm-z80.git#d48307833b477a872afeca7dcbefaa6330aebf10",
-            .hash = "N-V-__8AAEBiD5D33uaIS8PMvpYIiA9-RuLQqVFsy9Ysia22",
+            .url = "git+https://github.com/llvm-z80/llvm-z80.git#3363179afe9a06272d1da3036476767a0232f4ba",
+            .hash = "N-V-__8AADHeHYa_RADJGOlBhJ3wJAHx7A1lVIDZXG43Vpyn",
             .lazy = true,
         },
     },
